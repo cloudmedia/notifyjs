@@ -62,6 +62,16 @@
 		r: "l"
 	};
 
+	// Added by Cloudulus for sounds2.js support
+	var sounds = {
+		error: 'erroneous',
+		success: 'calculate',
+		warn: 'dialex',
+		info: 'chikaka',
+		mail: 'whoop',
+		close: 'tink'
+	};
+
 	var parsePosition = function(str) {
 		var pos;
 		pos = [];
@@ -201,7 +211,8 @@
 		showDuration: 400,
 		hideAnimation: "slideUp",
 		hideDuration: 200,
-		gap: 5
+		gap: 5,
+		useSounds: false
 	};
 
 	var inherit = function(a, b) {
@@ -335,6 +346,20 @@
 			return callback();
 		}
 		args.push(callback);
+
+		// Play sound -- added by Cloudulus for sounds2.js support
+		if (this.options.useSounds)
+		{
+			var playSound = sounds[this.options.className];
+			var hideSound = sounds.close;
+			if (!hidden && show)
+			{
+				playNotifySound(playSound);
+			}else{
+				playNotifySound(hideSound);
+			}
+		}
+
 		return elems[fn].apply(elems, args);
 	};
 
@@ -623,3 +648,82 @@
 	});
 
 }));
+
+(function ($) {
+    $.fn.notifyForm = function (msg, opts, callback) {
+		if (typeof msg === typeof undefined) msg = "An error has occurred!";
+		if (typeof opts === 'function')
+		{
+			callback = opts;
+			opts = {};
+		}
+
+        var s = $.extend({
+            clearField: false,
+            scrollToField: true,
+            topOffset: 0,
+			scrollTime: 1000,
+
+			autoHide: true,
+			clickToHide: true,
+			autoHideDelay: 5000,
+			arrowShow: true,
+			arrowSize: 5,
+			breakNewLines: true,
+			elementPosition: "bottom",
+			globalPosition: "top right",
+			style: "bootstrap",
+			className: "error",
+			showAnimation: "slideDown",
+			showDuration: 400,
+			hideAnimation: "slideUp",
+			hideDuration: 200,
+			gap: 5
+        }, opts);
+
+		this.notify(msg, {
+			autoHide: s.autoHide,
+			clickToHide: s.clickToHide,
+			autoHideDelay: s.autoHideDelay,
+			arrowShow: s.arrowShow,
+			arrowSize: s.arrowSize,
+			breakNewLines: s.breakNewLines,
+			elementPosition: s.elementPosition,
+			globalPosition: s.globalPosition,
+			style: s.style,
+			className: s.className,
+			showAnimation: s.showAnimation,
+			showDuration: s.showDuration,
+			hideAnimation: s.hideAnimation,
+			hideDuration: s.hideDuration,
+			gap: s.gap
+		});
+
+        if (s.scrollToField)
+        {
+            var offSet = 0;
+            if (typeof this.offset === 'function') offSet = this.offset().top;
+            $('html, body').animate({
+                scrollTop: (offSet - s.topOffset)
+            }, s.scrollTime);
+        }
+
+		if (s.clearField)
+		{
+			this.val("");
+			this.data('val', "");
+		}
+        this.select();
+        if (typeof callback === 'function')
+        {
+            return callback(this);
+        }else{
+            return this;
+        }
+    }
+})(jQuery);
+
+function playNotifySound(snd)
+{
+	sounds.play(snd);
+}
